@@ -17,7 +17,7 @@ body{
     margin: 0;
 }
 
-.btn-link{
+.btn{
     background-color: var(--bg-btn);
     color: var(--text-secondary);
     display: flex;
@@ -27,6 +27,8 @@ body{
     margin-inline: 5px;
     max-width: fit-content;
     text-decoration: none;
+    border: none;
+    font-size: small;
 }
 
 
@@ -35,11 +37,11 @@ header,footer{
     padding: 5px;
     display: flex;
     flex-direction: row;
-    vertical-align: middle;
+    align-items: center;
 }
 
 header{
-    justify-content: end;
+    justify-content: space-between;
 }
 
 footer{
@@ -67,3 +69,12 @@ footer{
     margin: 30px;
 }
 
+a{
+    color: var(--text-primary);
+}
+
+input{
+    border: 1px solid #ccc;
+    padding: 3px;
+    border-radius: 5px;
+}

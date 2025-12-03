@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Rekisteröidy</title>
+</head>
+<body>
+    <header>
+        <a href="home.html" class="btn">Etusivu</a>
+        <div style="display: flex;">
+            <a href="#" class="btn">Kirjaudu sisään</a>
+            <a href="reg.html" class="btn">Rekisteröidy</a>
+        </div>  
+    </header>
+    
+    <div class="content">
+        <div class="container">
+            <form method="post" action="#">
+                <label for="name">Nimi:</label>
+                <input type="text" name="name" id="name" required><br><br>
+                
+                <label for="name">Sähköposti:</label>
+                <input type="email" name="email" id="email" required><br><br>
+                
+                <label for="name">Salasana:</label>
+                <input type="password" name="password" id="password" required><br><br>
+            </form>
+            <button id="submitbtn" class="btn">Rekisteröidy</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>footer</p>
+    </footer>
+
+    <script>
+        const btn = document.getElementById("submitbtn");
+
+        btn.addEventListener("click", register);
+
+        function register(){
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+        }
+    </script>
+</body>
+</html>
