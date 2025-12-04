@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <title>Rekisteröidy</title>
+    <title>Tapahtumat</title>
 </head>
 <body>
     <header>
@@ -16,9 +16,45 @@
     
     <div class="content">
         <div class="container">
-
+            <h2>Tapahtumat</h2>
+            <a href="#" class="btn">Lisää uusi tapahtuma</a>
+            <form class="dashboard-filter">
+                <h4>Suodattimet:</h4>
+                <div>
+                    <label>Ajanjakso:</label><br>
+                    <input type="date" name="filter-date-start" id="filter-date-start"><br>
+                    <input type="date" name="filter-date-end" id="filter-date-end">
+                </div>
+                <div>
+                    <label>Rahamäärä:</label><br>
+                    <select name="filter-operation" id="filter-operation">
+                        <option value="none">-</option>
+                        <option value="greater">&gt;</option>
+                        <option value="greater-equal">&gt;=</option>
+                        <option value="equal">=</option>
+                        <option value="less-equal">=&lt;</option>
+                        <option value="less">&lt;</option>
+                    </select>
+                    <input type="number" step=".01" name="filter-sum" id="filter-sum">
+                </div>
+                <div>
+                    <label>Kategoria:</label><br>
+                    <select name="filter-category" id="filter-category">
+                        <option value="all">Kaikki kategoriat</option>
+                    </select>
+                </div>
+            </form>
+            <hr>
         </div>
     </div>
+
+    <script>
+
+        if(localStorage.getItem("user") == null){
+            window.location.replace("login.html");
+        }
+
+    </script>
 
     <footer>
         <p>footer</p>
