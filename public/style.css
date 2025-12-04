@@ -30,6 +30,9 @@ body{
     border: none;
     font-size: small;
 }
+.btn:hover{
+    cursor: pointer;
+}
 
 
 header,footer{
@@ -74,8 +77,33 @@ a{
     color: var(--text-primary);
 }
 
-input{
+input,select{
     border: 1px solid #ccc;
     padding: 3px;
     border-radius: 5px;
+}
+
+.dashboard-filter{
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.msg-empty,.msg-error,.msg-success{
+    padding: 5px;
+    border-radius: 10px;
+    color: var(--text-primary);
+    max-width: fit-content;
+    padding-inline: 10px;
+}
+
+.msg-error,.msg-success{
+    background-color: var(--bg-primary);
+}
+
+.msg-error{
+    color: red;
+}
+.msg-success{
+    color: rgb(0, 155, 0);
 }

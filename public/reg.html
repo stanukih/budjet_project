@@ -17,7 +17,7 @@
     
     <div class="content">
         <div class="container">
-            <form method="post" action="api/reg">
+            <form method="post" action="#">
                 <label for="name">Nimi:</label>
                 <input type="text" name="name" id="name" required><br><br>
                 
@@ -27,8 +27,10 @@
                 <label for="name">Salasana:</label>
                 <input type="password" name="password" id="password" required><br><br>
 
-                <button type="submit" id="submitbtn" class="btn">Rekisteröidy</button>
             </form>
+            <button type="submit" id="submitbtn" class="btn">Rekisteröidy</button>
+
+            <p class="msg-empty" id="result-text"></p>
         </div>
     </div>
 
@@ -42,11 +44,51 @@
         btn.addEventListener("click", register);
 
         function register(){
-            const name = document.getElementById("name").value;
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
+            const nameInput = document.getElementById("name");
+            const emailInput = document.getElementById("email");
+            const passwordInput = document.getElementById("password");
 
-            console.log("test");
+            if(nameInput.checkValidity() && emailInput.checkValidity() && passwordInput.checkValidity()){
+
+                const name = nameInput.value;
+                const email = emailInput.value;
+                const password = passwordInput.value;
+                
+                let msg = "";
+                
+                fetch("api/reg", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    password: password
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+            })
+            .then((response) => response.json())
+            .then((json) => {
+
+                console.log(json);
+
+                const resultText = document.getElementById("result-text");
+
+                switch (json.status) {
+                    case "success":
+                        window.location.replace("dashboard.html");
+                        break;
+                    case "error":
+                        resultText.className = "msg-error";
+                        msg = json.message;
+                        break;
+                        default:
+                            break;
+                    }
+                        
+                        resultText.textContent = msg;
+                });
+            }
         }
     </script>
 </body>
