@@ -4,32 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <title>Rekisteröidy</title>
+    <title>Muokkaa tiliä</title>
 </head>
 <body>
     <header>
         <a href="home.html" class="btn">Etusivu</a>
         <div style="display: flex;">
-            <a href="login.html" class="btn">Kirjaudu sisään</a>
-            <a href="reg.html" class="btn">Rekisteröidy</a>
+            <a href="#" class="btn">Kirjaudu ulos</a>
         </div>  
     </header>
     
     <div class="content">
         <div class="container">
-            <h2>Rekisteröidy</h2>
+            <h2>Muokkaa tilin nimeä</h2>
             <form method="post" action="#">
-                <label for="name">Nimi:</label>
-                <input type="text" name="name" id="name" required><br><br>
-                
-                <label for="name">Sähköposti:</label>
-                <input type="email" name="email" id="email" required><br><br>
-                
-                <label for="name">Salasana:</label>
-                <input type="password" name="password" id="password" required><br><br>
+                <input type="text" name="title" id="title" required><br><br>
 
+                <div style="display: flex;">
+                    <button type="submit" id="submitbtn" class="btn">Tallenna</button>
+                    <a class="btn" href="accounts.html">Kumoa</a>
+                </div>
             </form>
-            <button type="submit" id="submitbtn" class="btn">Rekisteröidy</button>
 
             <p class="msg-empty" id="result-text"></p>
         </div>
@@ -40,29 +35,30 @@
     </footer>
 
     <script>
+        if(localStorage.getItem("user") == null){
+            window.location.replace("login.html");
+        }
+
+        const titleInput = document.getElementById("title");
         const btn = document.getElementById("submitbtn");
 
+        
         btn.addEventListener("click", register);
 
         function register(){
-            const nameInput = document.getElementById("name");
-            const emailInput = document.getElementById("email");
-            const passwordInput = document.getElementById("password");
 
-            if(nameInput.checkValidity() && emailInput.checkValidity() && passwordInput.checkValidity()){
+            if(titleInput.checkValidity()){
 
-                const name = nameInput.value;
-                const email = emailInput.value;
-                const password = passwordInput.value;
+                const title = titleInput.value;
                 
                 let msg = "";
-                
-                fetch("api/reg", {
-                method: "POST",
+
+                fetch("api/account/update", {
+                method: "PUT",
                 body: JSON.stringify({
-                    name: name,
-                    email: email,
-                    password: password
+                    id: window.location.search.substr(12),
+                    title: title,
+                    user_id: localStorage.getItem("user")
                 }),
                 headers: {
                     "Content-type": "application/json; charset=UTF-8"
@@ -77,7 +73,7 @@
 
                 switch (json.status) {
                     case "success":
-                        window.location.replace("dashboard.html");
+                        window.location.replace("accounts.html");
                         break;
                     case "error":
                         resultText.className = "msg-error";
@@ -87,7 +83,7 @@
                             break;
                     }
                         
-                        resultText.textContent = msg;
+                resultText.textContent = msg;
                 });
             }
         }

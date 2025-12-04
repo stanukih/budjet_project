@@ -18,7 +18,7 @@
         <div class="container">
             <h2>Tapahtumat</h2>
             <a href="#" class="btn">Lisää uusi tapahtuma</a>
-            <form class="dashboard-filter">
+            <form class="horizontal-container">
                 <h4>Suodattimet:</h4>
                 <div>
                     <label>Ajanjakso:</label><br>
@@ -53,6 +53,29 @@
         if(localStorage.getItem("user") == null){
             window.location.replace("login.html");
         }
+
+        const categorySelect = document.getElementById("filter-category");
+        
+        fetch("api/category/get_all")
+        .then((response) => response.json())
+        .then((json) =>{
+
+            if(json.status == "success"){
+
+                
+                for (let i = 0; i < json.data.length; i++) {
+                    
+                    let opt = document.createElement("option");
+                    
+                    const categ = json.data[i];
+                    opt.value = categ.id;
+                    opt.innerHTML = categ.title;
+                    
+                    categorySelect.appendChild(opt);
+                }
+                
+            }
+        });
 
     </script>
 

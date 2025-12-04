@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Tilit</title>
+</head>
+<body>
+    <header>
+        <a href="home.html" class="btn">Etusivu</a>
+        <div style="display: flex;">
+            <a href="#" class="btn">Kirjaudu ulos</a>
+        </div>  
+    </header>
+    
+    <div class="content">
+        <div class="container">
+            <h2>Tilit</h2>
+                <table id="accounts-table">
+                    <th>Nimi</th>
+                    <th>Rahamäärä</th>
+                    <th>Luotu</th>
+                    <th>Viimeksi muokattu</th>
+                    <th>Toiminnot</th>
+                </table>
+                <a href="account_create.html" class="btn">Lisää uusi tili</a>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <script>
+
+        if(localStorage.getItem("user") == null){
+            window.location.replace("login.html");
+        }
+
+        fetch("api/account/get_all?user_id="+localStorage.user)
+        .then((response) => response.json())
+        .then((json) =>{
+            if(json.status == "success"){
+
+                const accTable = document.getElementById("accounts-table");
+
+                for (let i = 0; i < json.data.length; i++) {
+                    const acc = json.data[i];
+                    
+                    const tr = document.createElement("tr");
+                    
+                    const td1 = document.createElement("td");
+                    td1.textContent = acc.title;
+                    tr.appendChild(td1);
+
+                    const td2 = document.createElement("td");
+                    td2.textContent = acc.sum;
+                    tr.appendChild(td2);
+
+                    const td3 = document.createElement("td");
+                    td3.textContent = acc.created_at.substring(0,10);
+                    tr.appendChild(td3);
+
+                    const td4 = document.createElement("td");
+                    td4.textContent = acc.updated_at.substring(0,10);
+                    tr.appendChild(td4);
+
+                    const td5 = document.createElement("td");
+                    td5.innerHTML = '<div style="display: flex;"><a href="account_update.html?account_id=' + acc.id +'" class="btn">Muokkaa nimeä</a></div>';
+                    tr.appendChild(td5);
+
+                    accTable.appendChild(tr);
+
+                }
+            }
+        });
+
+    </script>
+
+    <footer>
+        <p>footer</p>
+    </footer>
+</body>
+</html>
