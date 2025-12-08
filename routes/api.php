@@ -22,7 +22,7 @@ Route::post('/account/create', [AccountController::class, 'create'])->name('acco
 Route::put('/account/update', [AccountController::class, 'update'])->name('account_update');
 
 //Operation
-Route::get('/operation/get_all', [OperationController::class, 'get_all'])->name('operation_get_all'); 
+Route::post('/operation/get_all', [OperationController::class, 'get_all'])->name('operation_get_all'); 
 Route::post('/operation/create', [OperationController::class, 'create'])->name('operation_create');
 Route::put('/operation/update', [OperationController::class, 'update'])->name('operation_update');
 Route::delete('/operation/delete', [OperationController::class, 'delete'])->name('operation_delete');
