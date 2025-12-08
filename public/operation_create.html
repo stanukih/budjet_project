@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Lisää tapahtuma</title>
+</head>
+<body>
+    <header>
+        <a href="home.html" class="btn">Etusivu</a>
+        <div style="display: flex;">
+            <a href="logout.html" class="btn">Kirjaudu ulos</a>
+        </div>  
+    </header>
+    
+    <div class="content">
+        <div class="container">
+            <h2>Lisää tapahtuma</h2>
+            <form method="post" action="#">
+                <label for="date">Päivämäärä</label>
+                <input type="date" name="date" id="date"><br><br>
+                
+                <label for="type">Tyyppi:</label>
+                <select name="type" id="type">
+                    <option value="going">Meno</option>
+                    <option value="coming">Tulo</option>
+                </select><br><br>
+
+                <label for="category">Kategoria</label>
+                <select name="category-select" id="category-select">
+                </select><br><br>
+                
+                <label for="sum">Rahamäärä:</label>
+                <input type="number" step=".01" name="sum" id="sum" required><br><br>
+                
+                <label for="acc">Tili</label>
+                <select name="acc" id="acc">
+                </select>    <br><br>
+
+                <label for="desc">Kuvaus:</label>
+                <textarea type="text" name="desc" id="desc" required ></textarea><br><br>
+            </form>
+            <div class="horizontal-container">
+                <button type="submit" id="submitbtn" class="btn">Lisää tapahtuma</button>
+                <a href="dashboard.html" class="btn">Kumoa</a>
+            </div>
+
+            <p class="msg-empty" id="result-text"></p>
+        </div>
+    </div>
+
+    <footer>
+        <p>footer</p>
+    </footer>
+
+    <script>
+        if(localStorage.getItem("user") == null){
+            window.location.replace("login.html");
+        }
+
+        const categorySelect = document.getElementById("category-select")
+        fetch("api/category/get_all")
+        .then((response) => response.json())
+        .then((json) =>{
+
+            if(json.status == "success"){
+
+                
+                for (let i = 0; i < json.data.length; i++) {
+                    
+                    let opt = document.createElement("option");
+                    
+                    const categ = json.data[i];
+                    opt.value = categ.id;
+                    opt.innerHTML = categ.title;
+                    
+                    categorySelect.appendChild(opt);
+                }
+                
+            }
+        });
+
+        const accountSelect = document.getElementById("acc");
+        fetch("api/account/get_all?user_id="+localStorage.user)
+        .then((response) => response.json())
+        .then((json) =>{
+            if(json.status == "success"){
+
+
+                for (let i = 0; i < json.data.length; i++) {
+                    const acc = json.data[i];
+                    
+                    const opt = document.createElement("option");
+
+                    opt.value = acc.id;
+                    opt.innerHTML = acc.title;
+
+                    accountSelect.appendChild(opt); 
+                }
+            }
+        });
+
+        const btn = document.getElementById("submitbtn");
+
+        const dateInput = document.getElementById("date");
+        dateInput.value = new Date().toISOString().substr(0,10)
+
+        btn.addEventListener("click", create);
+
+        function create(){
+            const typeSelect = document.getElementById("type");
+            const sumInput = document.getElementById("sum");
+            const descInput = document.getElementById("desc");
+            
+
+            if(dateInput.checkValidity() && sumInput.checkValidity()){
+
+                
+                let msg = "";
+                
+                fetch("api/operation/create", {
+                method: "POST",
+                body: JSON.stringify({
+                    date: dateInput.value,
+                    account_id: accountSelect.value,
+                    type_id: typeSelect.value,
+                    category_id: categorySelect.value,
+                    sum: sumInput.value,
+                    description: descInput.value,
+                    user_id: localStorage.getItem("user")
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+            })
+            .then((response) => response.json())
+            .then((json) => {
+
+                console.log(json);
+
+                const resultText = document.getElementById("result-text");
+
+                switch (json.status) {
+                    case "success":
+                        window.location.replace("dashboard.html");
+                        break;
+                    case "error":
+                        resultText.className = "msg-error";
+                        msg = json.message;
+                        break;
+                        default:
+                            break;
+                    }
+                        
+                        resultText.textContent = msg;
+                })
+                .catch((e)=>{
+                    console.log(e);
+                })
+            }
+            
+        }
+    </script>
+</body>
+</html>

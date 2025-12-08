@@ -10,14 +10,18 @@
     <header>
         <a href="home.html" class="btn">Etusivu</a>
         <div style="display: flex;">
-            <a href="#" class="btn">Kirjaudu ulos</a>
+            <a href="logout.html" class="btn">Kirjaudu ulos</a>
         </div>  
     </header>
     
     <div class="content">
         <div class="container">
             <h2>Tapahtumat</h2>
-            <a href="#" class="btn">Lisää uusi tapahtuma</a>
+            <div class="horizontal-container">
+                <a href="operation_create.html" class="btn">Lisää uusi tapahtuma</a>
+                <a href="accounts.html" class="btn">Selaa tilejä</a>
+            </div>
+            <br>
             <form class="horizontal-container">
                 <h4>Suodattimet:</h4>
                 <div>
@@ -29,22 +33,33 @@
                     <label>Rahamäärä:</label><br>
                     <select name="filter-operation" id="filter-operation">
                         <option value="none">-</option>
-                        <option value="greater">&gt;</option>
-                        <option value="greater-equal">&gt;=</option>
-                        <option value="equal">=</option>
-                        <option value="less-equal">=&lt;</option>
-                        <option value="less">&lt;</option>
+                        <option value=">">&gt;</option>
+                        <option value=">=">&gt;=</option>
+                        <option value="=">=</option>
+                        <option value="<=">=&lt;</option>
+                        <option value="<">&lt;</option>
                     </select>
                     <input type="number" step=".01" name="filter-sum" id="filter-sum">
                 </div>
                 <div>
                     <label>Kategoria:</label><br>
                     <select name="filter-category" id="filter-category">
-                        <option value="all">Kaikki kategoriat</option>
+                        <option value="">Kaikki kategoriat</option>
                     </select>
                 </div>
+                <button class="btn" type="button" id="filter-search">Hae</button>
             </form>
             <hr>
+
+             <table id="results-table">
+                    <th>Päivämäärä</th>
+                    <th>Rahamäärä</th>
+                    <th>Tili</th>
+                    <th>Kategoria</th>
+                    <th>Kuvaus</th>
+                    <th>Toiminnot</th>
+                </table>
+
         </div>
     </div>
 
@@ -56,13 +71,15 @@
 
         const categorySelect = document.getElementById("filter-category");
         
+        let categJson;
+
         fetch("api/category/get_all")
         .then((response) => response.json())
         .then((json) =>{
 
             if(json.status == "success"){
 
-                
+                categJson = json.data;
                 for (let i = 0; i < json.data.length; i++) {
                     
                     let opt = document.createElement("option");
@@ -77,6 +94,114 @@
             }
         });
 
+
+        let accounts;
+        fetch("api/account/get_all?user_id="+localStorage.user)
+        .then((response) => response.json())
+        .then((json) =>{
+            if(json.status == "success"){
+                accounts = json.data;
+            }
+        });
+        
+
+        search();
+
+
+        
+        document.getElementById("filter-search").addEventListener("click", search);
+        function search(){
+
+            const resultTable = document.getElementById("results-table");
+            resultTable.innerHTML = "<th>Päivämäärä</th><th>Rahamäärä</th><th>Tili</th><th>Kategoria</th><th>Kuvaus</th><th>Toiminnot</th>";
+
+
+            const filter_dateStart = document.getElementById("filter-date-start");
+            const filter_dateEnd = document.getElementById("filter-date-end");
+            const filter_operation = document.getElementById("filter-operation");
+            const filter_sum = document.getElementById("filter-sum");
+            const filter_category = document.getElementById("filter-category");
+
+            if(filter_dateStart.checkValidity() && filter_dateEnd.checkValidity() && filter_sum.checkValidity()){
+                
+                if((filter_operation.value === "none" && filter_sum.value !== "") || (filter_operation.value !== "none" && filter_sum.value === "")){
+                    
+                    return;
+                } 
+                
+            //     const url = "api/operation/get_all?user_id="+localStorage.user + "&filter=" + JSON.stringify({
+            //     start_date: filter_dateStart.value,
+            //     end_date: filter_dateEnd.value,
+            //     sum:{
+            //         operation: filter_operation.value,
+            //         value: filter_sum.value
+            //     },
+            //     category_id: filter_category.value
+            //     }
+            // );
+
+                
+            fetch("api/operation/get_all", {
+                method: "POST",
+                body: JSON.stringify({
+                    user_id: localStorage.getItem("user"),
+                    start_date: filter_dateStart.value,
+                    end_date: filter_dateEnd.value,
+                    sum:{
+                        operation: filter_operation.value,
+                        value: filter_sum.value
+                    },
+                category_id: filter_category.value
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+            })
+            .then((response) => response.json())
+            .then((json) =>{
+                if(json.status == "success"){
+
+
+                    const resultTable = document.getElementById("results-table");
+                    
+
+                    for (let i = 0; i < json.data.length; i++) {
+                        const opr = json.data[i];
+                        
+
+                        const tr = document.createElement("tr");
+                        
+                        const td1 = document.createElement("td");
+                        td1.textContent = opr.created_at.substring(0,10);
+                        tr.appendChild(td1);
+                        
+                        const td2 = document.createElement("td");
+                        td2.textContent = opr.sum;
+                        tr.appendChild(td2);
+
+                        const td3 = document.createElement("td");
+                        td3.textContent = categJson[categJson.findIndex(i=> i.id === opr.category_id)].title;
+                        tr.appendChild(td3);
+
+                        const td4 = document.createElement("td");
+                        td4.textContent = accounts[accounts.findIndex(i=> i.id === opr.account_id)].title;
+                        tr.appendChild(td4);
+
+                        const td5 = document.createElement("td");
+                        td5.textContent = opr.description;
+                        tr.appendChild(td5);
+
+                        const td6 = document.createElement("td");
+                        td6.innerHTML = '<div class="horizontal-container"><a href="operation_update.html?operation_id=' + opr.id +'" class="btn">Muokkaa</a>  </div>';
+                        tr.appendChild(td6);
+                        
+                        resultTable.appendChild(tr);
+                        
+                    }
+                }
+            });
+        }
+    }
     </script>
 
     <footer>

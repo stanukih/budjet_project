@@ -29,6 +29,7 @@ body{
     text-decoration: none;
     border: none;
     font-size: small;
+    max-height: 36px;
 }
 .btn:hover{
     cursor: pointer;
@@ -78,7 +79,7 @@ a{
     color: var(--text-primary);
 }
 
-input,select{
+input,select,textarea{
     border: 1px solid #ccc;
     padding: 3px;
     border-radius: 5px;

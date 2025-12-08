@@ -10,7 +10,7 @@
     <header>
         <a href="home.html" class="btn">Etusivu</a>
         <div style="display: flex;">
-            <a href="#" class="btn">Kirjaudu ulos</a>
+            <a href="logout.html" class="btn">Kirjaudu ulos</a>
         </div>  
     </header>
     
@@ -24,7 +24,10 @@
                     <th>Viimeksi muokattu</th>
                     <th>Toiminnot</th>
                 </table>
-                <a href="account_create.html" class="btn">Lisää uusi tili</a>
+                <div class="horizontal-container">
+                    <a href="account_create.html" class="btn">Lisää uusi tili</a>
+                    <a href="dashboard.html" class="btn">Selaa tapahtumia</a>
+                </div>
             </div>
         </div>
     </div>
@@ -66,7 +69,7 @@
                     tr.appendChild(td4);
 
                     const td5 = document.createElement("td");
-                    td5.innerHTML = '<div style="display: flex;"><a href="account_update.html?account_id=' + acc.id +'" class="btn">Muokkaa nimeä</a></div>';
+                    td5.innerHTML = '<div class="horizontal-container"><a href="account_update.html?account_id=' + acc.id +'" class="btn">Muokkaa nimeä</a> </div>';
                     tr.appendChild(td5);
 
                     accTable.appendChild(tr);
