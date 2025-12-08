@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Operation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OperationController extends Controller
 {
@@ -70,16 +71,27 @@ class OperationController extends Controller
             return response()->json($response, 400, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
         JSON_UNESCAPED_UNICODE);
         }
-        $accounts = Account::where('user_id', $request['user_id'])->get();
-        $operations_request = Operation::where('account_id','in',$accounts);
+        
+        $accounts = Account::where('user_id', $request['user_id'])->get(['id']);
+        
+        $account_list_id = [];
+        foreach ($accounts as $account){
+            array_push($account_list_id, $account->id);
+        }
+        //$options = [['account_id','in', $account_list_id]];
+        $operations_request = Operation::whereIn('account_id', $account_list_id);
+        //return $operations_request->get();
         $filters = $request['filter'];
         if (isset($filters['start_date'])){
+            //array_push($options,['created_at','>=',$filters['start_date']]);
             $operations_request->where('created_at','>=',$filters['start_date']);
         }
         if (isset($filters['stop_date'])){
+            //array_push($options,['created_at','<=',$filters['stop_date']]);
             $operations_request->where('created_at','<=',$filters['stop_date']);
         }
         if (isset($filters['category_id'])){
+            //array_push($options,['category_id','=',$filters['category_id']]);
             $operations_request->where('category_id','=',$filters['category_id']);
         }
         if (
@@ -87,9 +99,12 @@ class OperationController extends Controller
             isset($filters['sum']['operation'])&&
             isset($filters['sum']['value'])
             ){
-            $operations_request->where('sum',$filters['sum']['operation'],$filters['sum']['value']);
+                //array_push($options,['sum', $filters['sum']['operation'], $filters['sum']['value']]);
+                $operations_request->where('sum',$filters['sum']['operation'],$filters['sum']['value']);
         }
+        //$operations = Operation::where($options)->get();
         $operations = $operations_request->get();
+        //return $operations_request->toSql();
         $response = [];
         $response['status'] = 'success';
         $response['data'] = $operations;
