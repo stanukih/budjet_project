@@ -13,7 +13,7 @@ class OperationController extends Controller
         if (
             !isset($request['date'])&&
             !isset($request['account_id'])&&
-            !isset($request['type'])&&
+            !isset($request['type_id'])&&
             !isset($request['category_id'])&&
             !isset($request['sum'])&&
             !isset($request['description'])&&
@@ -41,7 +41,7 @@ class OperationController extends Controller
         $operation = new Operation();
         $operation->created_at = $request['date'];
         $operation->account_id = $request['account_id'];
-        $operation->type = $request['type'];
+        $operation->type = $request['type_id'];
         $operation->category_id = $request['category_id'];
         $operation->sum = $request['sum'];
         $operation->description = $request['description'];
