@@ -109,11 +109,11 @@
         .then((json) =>{
             if(json.status == "success"){
                 accounts = json.data;
+                search();
             }
         });
         
 
-        search();
 
 
         
@@ -173,7 +173,6 @@
             .then((response) => response.json())
             .then((json) =>{
                 if(json.status == "success"){
-
                     
                     const resultTable = document.getElementById("results-table");
                     
