@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <title>Lisää tapahtuma</title>
+    <title>Muokkaa tapahtumaa</title>
 </head>
 <body>
     <header>
@@ -16,8 +16,8 @@
     
     <div class="content">
         <div class="container">
-            <h2>Lisää tapahtuma</h2>
-            <form method="post" action="#">
+            <h2>Muokkaa tapahtumaa</h2>
+                <form method="post" action="#">
                 <label for="date">Päivämäärä</label>
                 <input type="date" name="date" id="date" required><br><br>
                 
@@ -33,16 +33,12 @@
                 
                 <label for="sum">Rahamäärä:</label>
                 <input type="number" step=".01" name="sum" id="sum" required><br><br>
-                
-                <label for="acc">Tili</label>
-                <select name="acc" id="acc">
-                </select>    <br><br>
 
                 <label for="desc">Kuvaus:</label>
                 <textarea type="text" name="desc" id="desc" required ></textarea><br><br>
             </form>
             <div class="horizontal-container">
-                <button type="submit" id="submitbtn" class="btn">Lisää tapahtuma</button>
+                <button type="submit" id="submitbtn" class="btn">Tallenna muutokset</button>
                 <a href="dashboard.html" class="btn">Kumoa</a>
             </div>
 
@@ -59,7 +55,7 @@
             window.location.replace("login.html");
         }
 
-        const categorySelect = document.getElementById("category-select")
+        const categorySelect = document.getElementById("category-select");
         fetch("api/category/get_all")
         .then((response) => response.json())
         .then((json) =>{
@@ -81,50 +77,60 @@
             }
         });
 
-        const accountSelect = document.getElementById("acc");
-        fetch("api/account/get_all?user_id="+localStorage.user)
-        .then((response) => response.json())
-        .then((json) =>{
-            if(json.status == "success"){
-
-
-                for (let i = 0; i < json.data.length; i++) {
-                    const acc = json.data[i];
-                    
-                    const opt = document.createElement("option");
-
-                    opt.value = acc.id;
-                    opt.innerHTML = acc.title;
-
-                    accountSelect.appendChild(opt); 
-                }
-            }
-        });
-
         const btn = document.getElementById("submitbtn");
 
         const dateInput = document.getElementById("date");
-        dateInput.value = new Date().toISOString().substr(0,10)
+        const typeSelect = document.getElementById("type");
+        const sumInput = document.getElementById("sum");
+        const descInput = document.getElementById("desc");
 
-        btn.addEventListener("click", create);
+        const oprId = window.location.search.substr(14);
+        let accId;
 
-        function create(){
-            const typeSelect = document.getElementById("type");
-            const sumInput = document.getElementById("sum");
-            const descInput = document.getElementById("desc");
-            
+        fetch("api/operation/get_all", {
+                method: "POST",
+                body: JSON.stringify({
+                    user_id: localStorage.getItem("user"),
+                }),
+                
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+            })
+            .then((response) => response.json())
+            .then((json) =>{
+                if(json.status === "success"){
+
+                    for (let i = 0; i < json.data.length; i++) {
+                        const opr = json.data[i];
+                        
+                        if(opr. id === oprId){    
+                            accId = opr.account_id;
+                            typeSelect.value = opr.type;
+                            categorySelect.value = opr.category_id;
+                            sumInput.value = opr.sum;
+                            descInput.value = opr.description;
+                            dateInput.value = opr.created_at.substr(0,10);
+                        }
+                    }
+                }
+            });
+
+        btn.addEventListener("click", updateOperation);
+
+        function updateOperation(){
 
             if(dateInput.checkValidity() && sumInput.checkValidity()){
-
                 
                 let msg = "";
                 
-                fetch("api/operation/create", {
-                method: "POST",
+                fetch("api/operation/update", {
+                method: "PUT",
                 body: JSON.stringify({
+                    operation_id: oprId,
                     date: dateInput.value,
-                    account_id: accountSelect.value,
-                    type_id: typeSelect.value,
+                    account_id: accId,
+                    type: typeSelect.value,
                     category_id: categorySelect.value,
                     sum: sumInput.value,
                     description: descInput.value,

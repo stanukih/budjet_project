@@ -42,6 +42,14 @@
                     <input type="number" step=".01" name="filter-sum" id="filter-sum">
                 </div>
                 <div>
+                    <label>Tyyppi:</label><br>
+                    <select name="filter-type" id="filter-type">
+                        <option value="all">Kaikki</option>
+                        <option value="coming">Tulot</option>
+                        <option value="going">Menot</option>
+                    </select>
+                </div>
+                <div>
                     <label>Kategoria:</label><br>
                     <select name="filter-category" id="filter-category">
                         <option value="">Kaikki kategoriat</option>
@@ -121,6 +129,7 @@
             const filter_operation = document.getElementById("filter-operation");
             const filter_sum = document.getElementById("filter-sum");
             const filter_category = document.getElementById("filter-category");
+            const filter_type = document.getElementById("filter-type");
 
             if(filter_dateStart.checkValidity() && filter_dateEnd.checkValidity() && filter_sum.checkValidity()){
                 
@@ -164,15 +173,15 @@
             .then((json) =>{
                 if(json.status == "success"){
 
-
-                    const resultTable = document.getElementById("results-table");
-
-                    console.log(json);
                     
-
+                    const resultTable = document.getElementById("results-table");
+                    
                     for (let i = 0; i < json.data.length; i++) {
                         const opr = json.data[i];
                         
+                        if((filter_type.value === "coming" && opr.type === "going") || (filter_type.value === "going" && opr.type === "coming")){
+                            continue;
+                        }
 
                         const tr = document.createElement("tr");
                         
@@ -182,22 +191,24 @@
                         
                         const td2 = document.createElement("td");
                         td2.textContent = opr.sum;
+                        if(opr.type ==="going"){td2.className = "opr-going"}
+                        else if(opr.type === "coming"){td2.className="opr-coming"}
                         tr.appendChild(td2);
 
-                        const td3 = document.createElement("td");
-                        td3.textContent = categJson[categJson.findIndex(i=> i.id === opr.category_id)].title;
-                        tr.appendChild(td3);
-
                         const td4 = document.createElement("td");
-                        td4.textContent = accounts[accounts.findIndex(i=> i.id === opr.account_id)].title;
+                        td4.textContent = accounts[accounts.findIndex(o=> o.id === opr.account_id)].title;
                         tr.appendChild(td4);
+
+                        const td3 = document.createElement("td");
+                        td3.textContent = categJson[categJson.findIndex(o=> o.id === opr.category_id)].title;
+                        tr.appendChild(td3);
 
                         const td5 = document.createElement("td");
                         td5.textContent = opr.description;
                         tr.appendChild(td5);
 
                         const td6 = document.createElement("td");
-                        td6.innerHTML = '<div class="horizontal-container"><a href="operation_update.html?operation_id=' + opr.id +'" class="btn">Muokkaa</a>  </div>';
+                        td6.innerHTML = '<div class="horizontal-container"><a href="operation_update.html?operation_id=' + opr.id +'" class="btn">Muokkaa</a> <button class="btn" onclick="deleteOperation(\''+ opr.id +'\')">Poista</button> </div>';
                         tr.appendChild(td6);
                         
                         resultTable.appendChild(tr);
@@ -207,6 +218,31 @@
             });
         }
     }
+
+    function deleteOperation(id){
+        if(confirm("Haluatko varmasti poistaa tapahtuman?")){
+            if(id!== null){
+                fetch("api/operation/delete", {
+                    method: "DELETE",
+                    body: JSON.stringify({
+                    operation_id: id,
+                    user_id: localStorage.getItem("user")
+                }),
+                
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+                }).then((response) => response.json())
+                .then((json) =>{
+                    if(json.status === 'error'){
+                        console.log(json.message);
+                    }
+                    search();
+                });
+            }
+        }
+    }
+
     </script>
 
     <footer>
