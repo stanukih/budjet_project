@@ -135,7 +135,8 @@
                 
                 if((filter_operation.value === "none" && filter_sum.value !== "") || (filter_operation.value !== "none" && filter_sum.value === "")){
                     
-                    return;
+                    filter_operation.value = "none";
+                    filter_sum.value = "";
                 } 
                 
             //     const url = "api/operation/get_all?user_id="+localStorage.user + "&filter=" + JSON.stringify({
