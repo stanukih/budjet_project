@@ -5,6 +5,15 @@
     --bg-btn: #000;
     --text-primary: #000;
     --text-secondary: #fff;
+    --text-table: #000;
+
+    /* --bg-primary: #595b67;
+    --bg-secondary: #797e8b;
+    --bg-header: #828597;
+    --bg-btn: #081045;
+    --text-primary: #ffffff;
+    --text-secondary: #fff;
+    --text-table: #ffffff; */
 }
 
 html{
@@ -121,4 +130,5 @@ table,th,td,tr{
     padding: 10px;
     border-collapse: collapse;
     border: 2px solid var(--bg-secondary);
+    color: var(--text-table);
 }
