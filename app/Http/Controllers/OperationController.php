@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Operation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use function Termwind\parse;
 
 class OperationController extends Controller
 {
@@ -47,15 +48,12 @@ class OperationController extends Controller
         $operation->description = $request['description'];
         $operation->save();
 
-        $sum = $account->sum;
-        if ($request['type']=='going'){
-            $account->sum = $sum - $request['sum'];
-            $account->save();
-        }
-        if ($request['type']=='coming'){
-            $account->sum = $sum + $request['sum'];
-            $account->save();
-        }
+        if ($request['type_id']=='going')
+            $account->sum = $account->sum - $request['sum'];
+        
+        if ($request['type_id']=='coming')
+            $account->sum = $account->sum + $request['sum'];
+        $account->save();
         $response = [];
         $response['status'] = 'success';
         return response()->json($response, 200, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
@@ -116,7 +114,7 @@ class OperationController extends Controller
         if (
             !isset($request['date'])&&
             !isset($request['account_id'])&&
-            !isset($request['type'])&&
+            !isset($request['type_id'])&&
             !isset($request['category_id'])&&
             !isset($request['sum'])&&
             !isset($request['description'])&&
@@ -149,30 +147,25 @@ class OperationController extends Controller
         }
 
         //vanhan operaation peruuttaminen
-        if ($operation->type=='going'){
+        if ($operation->type=='going')
             $account->sum = $account->sum + $operation->sum;
-            $account->save();
-        }
-        if ($operation->type=='coming'){
+        
+        if ($operation->type=='coming')
             $account->sum = $account->sum - $operation->sum;
-            $account->save();
-        }
+        
+        if ($request['type_id']=='going')
+            $account->sum = $account->sum - $request['sum'];
+        
+        if ($request['type_id']=='coming')
+            $account->sum = $account->sum + $request['sum'];
+        $account->save();
         $operation->created_at = $request['date'];
         $operation->account_id = $request['account_id'];
-        $operation->type = $request['type'];
+        $operation->type = $request['type_id'];
         $operation->category_id = $request['category_id'];
         $operation->sum = $request['sum'];
         $operation->description = $request['description'];
-        $operation->save();
-
-        if ($request['type']=='going'){
-            $account->sum = $account->sum - $request['sum'];
-            $account->save();
-        }
-        if ($request['type']=='coming'){
-            $account->sum = $account->sum + $request['sum'];
-            $account->save();
-        } 
+        $operation->save(); 
         $response = [];
         $response['status'] = 'success';
         return response()->json($response, 200, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
