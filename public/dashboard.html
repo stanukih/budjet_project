@@ -145,6 +145,7 @@
                 method: "POST",
                 body: JSON.stringify({
                     user_id: localStorage.getItem("user"),
+                    filter: {
                     start_date: filter_dateStart.value,
                     end_date: filter_dateEnd.value,
                     sum:{
@@ -152,7 +153,9 @@
                         value: filter_sum.value
                     },
                 category_id: filter_category.value
-                }),
+                }}
+            ),
+                
                 headers: {
                     "Content-type": "application/json; charset=UTF-8"
                 }
