@@ -59,7 +59,8 @@
             </form>
             <hr>
 
-             <table id="results-table">
+            <div style="overflow-y: auto; max-height: 475px; width: fit-content ;">
+                <table id="results-table">
                     <th>Päivämäärä</th>
                     <th>Rahamäärä</th>
                     <th>Tili</th>
@@ -67,7 +68,15 @@
                     <th>Kuvaus</th>
                     <th>Toiminnot</th>
                 </table>
+            </div>
 
+            <hr>
+
+            <h4>Kuukausiyhteenveto</h4>
+            <p id="netBudget"></p>
+            <table id="categ-graph" class="categ-graph">
+
+            </table>
         </div>
     </div>
 
@@ -79,7 +88,7 @@
 
         const categorySelect = document.getElementById("filter-category");
         
-        let categJson;
+        let categories;
 
         fetch("api/category/get_all")
         .then((response) => response.json())
@@ -87,7 +96,7 @@
 
             if(json.status == "success"){
 
-                categJson = json.data;
+                categories = json.data;
                 for (let i = 0; i < json.data.length; i++) {
                     
                     let opt = document.createElement("option");
@@ -115,6 +124,11 @@
         
 
 
+        const currentMonth = new Date().getMonth();
+
+        let month_sums = [];
+        let month_categs = [];
+        let month_types = [];
 
         
         document.getElementById("filter-search").addEventListener("click", search);
@@ -138,19 +152,7 @@
                     filter_operation.value = "none";
                     filter_sum.value = "";
                 } 
-                
-            //     const url = "api/operation/get_all?user_id="+localStorage.user + "&filter=" + JSON.stringify({
-            //     start_date: filter_dateStart.value,
-            //     end_date: filter_dateEnd.value,
-            //     sum:{
-            //         operation: filter_operation.value,
-            //         value: filter_sum.value
-            //     },
-            //     category_id: filter_category.value
-            //     }
-            // );
 
-                
             fetch("api/operation/get_all", {
                 method: "POST",
                 body: JSON.stringify({
@@ -191,8 +193,8 @@
                         
                         const td2 = document.createElement("td");
                         td2.textContent = opr.sum;
-                        if(opr.type ==="going"){td2.className = "opr-going"}
-                        else if(opr.type === "coming"){td2.className="opr-coming"}
+                        if(opr.type ==="going"){td2.className = "opr-going";}
+                        else if(opr.type === "coming"){td2.className="opr-coming";}
                         tr.appendChild(td2);
 
                         const td4 = document.createElement("td");
@@ -200,7 +202,7 @@
                         tr.appendChild(td4);
 
                         const td3 = document.createElement("td");
-                        td3.textContent = categJson[categJson.findIndex(o=> o.id === opr.category_id)].title;
+                        td3.textContent = categories[categories.findIndex(o=> o.id === opr.category_id)].title;
                         tr.appendChild(td3);
 
                         const td5 = document.createElement("td");
@@ -210,10 +212,11 @@
                         const td6 = document.createElement("td");
                         td6.innerHTML = '<div class="horizontal-container"><a href="operation_update.html?operation_id=' + opr.id +'" class="btn">Muokkaa</a> <button class="btn" onclick="deleteOperation(\''+ opr.id +'\')">Poista</button> </div>';
                         tr.appendChild(td6);
-                        
+
                         resultTable.appendChild(tr);
                         
                     }
+                    listMonthlySummary();   
                 }
             });
         }
@@ -242,6 +245,140 @@
             }
         }
     }
+
+
+
+    function addMonthlyOperation(sum, type, categ, date){
+        if(date.substr(5,2) == currentMonth + 1){
+            month_sums.push(parseFloat(sum));
+            month_categs.push(categ);
+            month_types.push(type);
+        }
+    }
+
+    function listMonthlySummary(){
+        month_sums.length = 0;
+        month_categs.length = 0;
+        month_types.length = 0;
+        let netBudget = 0;
+
+
+        fetch("api/operation/get_all", {
+                method: "POST",
+                body: JSON.stringify({
+                    user_id: localStorage.getItem("user")
+                }),
+                
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+            })
+            .then((response) => response.json())
+            .then((json) =>{
+                if(json.status == "success"){
+                    
+                    const resultTable = document.getElementById("results-table");
+                    
+                    for (let i = 0; i < json.data.length; i++) {
+                        const opr = json.data[i];
+                        
+                        addMonthlyOperation(opr.sum, opr.type, categories[categories.findIndex(o=> o.id === opr.category_id)].title, opr.created_at)
+                        
+                    }
+
+                    const summaryText = document.getElementById("netBudget");
+                    const summaryNum = document.createElement("span");
+            
+                    for (let i = 0; i < month_sums.length; i++) {
+            
+                        if(month_types[i] === "going"){
+                            netBudget -= month_sums[i];
+                        }
+                        else if(month_types[i] === "coming"){
+                            netBudget += month_sums[i];
+                        }
+                    }
+            
+                    summaryText.textContent = "Kuukauden nettobudjetti: ";
+                    styleSummary(summaryNum, netBudget);
+                    summaryText.appendChild(summaryNum);
+
+
+                    const categList = document.getElementById("categ-graph");
+                    categList.innerHTML = "";
+
+                    let sums = [];
+                    let bars = [];
+
+                    categories.forEach(category => {
+                        const tr = document.createElement("tr");
+                        let categSum = 0;
+                        const td1 = document.createElement("td");
+                        const td2 = document.createElement("td");
+                        const sumBar1 = document.createElement("div");
+                        const sumBar2 = document.createElement("div");
+
+                        tr.style="height: 60px;"
+                        td1.style = "border-right: 1px solid #000; max-width: 130px";
+                        td2.className = "categ-bar-container";
+
+                        sumBar2.className = "categ-bar-filler";
+
+                        for (let i = 0; i < month_sums.length; i++) {
+                        if(month_categs[i] === category.title){
+
+                            if(month_types[i] === "going"){
+                                categSum -= month_sums[i];
+                            }
+                            else if(month_types[i] === "coming"){
+                                categSum += month_sums[i];
+                            }
+                            
+                        }
+                        td1.textContent = category.title;
+                        sumBar1.textContent = categSum.toFixed(2) + "€";
+                        if(categSum >= 0){
+                            sumBar1.className = "categ-bar-1";
+                            td2.style = "flex-direction:row;";
+                        }else{
+                            sumBar1.className = "categ-bar-2";
+                            td2.style = "flex-direction:row-reverse;";
+                        }
+                        td2.appendChild(sumBar2);
+                        td2.appendChild(sumBar1);
+                        tr.appendChild(td1);
+                        tr.appendChild(td2);
+                        categList.appendChild(tr);
+                        sums.push(categSum);
+                        bars.push(sumBar1);
+                    }
+                    });
+
+                    let highest = 0;
+
+                    for (let i = 0; i < sums.length; i++) {
+                        const num = Math.abs(sums[i]);
+                        if(Math.abs(num > highest)){
+                            highest = num;
+                        }
+                    }
+
+                    const ratio = 200 / highest;
+                    console.log(highest + ", " + ratio)
+                    for (let i = 0; i < sums.length; i++) {
+                        bars[i].style = "width: "+ (Math.abs(sums[i]) * ratio) +"px;";
+                    }
+                }
+        });
+
+    }
+
+    function styleSummary(numElement, sum){
+        numElement.textContent = sum.toFixed(2) + " €";
+        numElement.style = sum < 0? "color:var(--text-red);" : "color:var(--text-green);";
+    }
+
+    
 
     </script>
 
