@@ -12,7 +12,7 @@ class CategoryController extends Controller
         $response = [];
             $response['status'] = 'success';
             $response['data'] = $categories;
-            return response()->json($response, 400, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
+            return response()->json($response, 200, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
         JSON_UNESCAPED_UNICODE);
     }
 }

@@ -58,7 +58,7 @@ class OperationController extends Controller
         }
         $response = [];
         $response['status'] = 'success';
-        return response()->json($response, 400, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
+        return response()->json($response, 200, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
         JSON_UNESCAPED_UNICODE);
     }
 
@@ -88,7 +88,7 @@ class OperationController extends Controller
         }
         if (!empty($filters['end_date'])){
             //array_push($options,['created_at','<=',$filters['stop_date']]);
-            $operations_request->where('created_at','<=',$filters['stop_date']);
+            $operations_request->where('created_at','<=',$filters['end_date']);
         }
         if (!empty($filters['category_id'])){
             //array_push($options,['category_id','=',$filters['category_id']]);
@@ -109,7 +109,7 @@ class OperationController extends Controller
         $response = [];
         $response['status'] = 'success';
         $response['data'] = $operations;
-        return response()->json($response, 400, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
+        return response()->json($response, 200, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
         JSON_UNESCAPED_UNICODE);
     }
     public function update(Request $request){
@@ -175,7 +175,7 @@ class OperationController extends Controller
         } 
         $response = [];
         $response['status'] = 'success';
-        return response()->json($response, 400, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
+        return response()->json($response, 200, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
         JSON_UNESCAPED_UNICODE);
     }
 
@@ -220,7 +220,7 @@ class OperationController extends Controller
         $operation->delete();
         $response = [];
         $response['status'] = 'success';
-        return response()->json($response, 400, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
+        return response()->json($response, 200, ['Content-Type' => 'application/json;charset=UTF-8', 'Charset' => 'utf-8'],
         JSON_UNESCAPED_UNICODE);
     }
 }
