@@ -6,6 +6,8 @@
     --text-primary: #000;
     --text-secondary: #fff;
     --text-table: #000;
+    --text-red: #ff0000;
+    --text-green: #009900;
 
     /* --bg-primary: #595b67;
     --bg-secondary: #797e8b;
@@ -113,10 +115,10 @@ input,select,textarea{
 }
 
 .msg-error{
-    color: red;
+    color: var(--text-red);
 }
 .msg-success{
-    color: rgb(0, 155, 0);
+    color: var(--text-green);
 }
 
 table{
@@ -131,4 +133,18 @@ table,th,td,tr{
     border-collapse: collapse;
     border: 2px solid var(--bg-secondary);
     color: var(--text-table);
+}
+
+.opr-going{
+    color: red;
+}
+.opr-going::before{
+    content: "- ";
+}
+
+.opr-coming{
+    color: var(--text-green);
+}
+.opr-coming::before{
+    content: "+ ";
 }
