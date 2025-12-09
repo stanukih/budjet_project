@@ -82,27 +82,28 @@ class OperationController extends Controller
         $operations_request = Operation::whereIn('account_id', $account_list_id);
         //return $operations_request->get();
         $filters = $request['filter'];
-        if (isset($filters['start_date'])){
+        if (!empty($filters['start_date'])){
             //array_push($options,['created_at','>=',$filters['start_date']]);
             $operations_request->where('created_at','>=',$filters['start_date']);
         }
-        if (isset($filters['stop_date'])){
+        if (!empty($filters['end_date'])){
             //array_push($options,['created_at','<=',$filters['stop_date']]);
             $operations_request->where('created_at','<=',$filters['stop_date']);
         }
-        if (isset($filters['category_id'])){
+        if (!empty($filters['category_id'])){
             //array_push($options,['category_id','=',$filters['category_id']]);
             $operations_request->where('category_id','=',$filters['category_id']);
         }
         if (
-            isset($filters['sum'])&&
-            isset($filters['sum']['operation'])&&
-            isset($filters['sum']['value'])
+            !empty($filters['sum'])&&
+            !empty($filters['sum']['operation'])&&
+            !empty($filters['sum']['value'])
             ){
                 //array_push($options,['sum', $filters['sum']['operation'], $filters['sum']['value']]);
                 $operations_request->where('sum',$filters['sum']['operation'],$filters['sum']['value']);
         }
         //$operations = Operation::where($options)->get();
+        //return $operations_request->toSql();
         $operations = $operations_request->get();
         //return $operations_request->toSql();
         $response = [];
