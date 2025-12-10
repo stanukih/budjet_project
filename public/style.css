@@ -156,22 +156,27 @@ table,th,td,tr{
 .categ-graph{
     max-width: 750px;
     background-color: var(--bg-secondary);
-
+    border: none;
 }
 
 .categ-bar-1,.categ-bar-2,.categ-bar-filler{
+    border: none;
     max-width: 200px;
     color: #000;
-    height: 30px;
+    height: 40px;
     border-radius: 5px;
     align-content: center;
 }
 .categ-bar-filler{
     width: 200px;
 }
+.table-no-border{
+    border: none;
+}
 .categ-bar-container{
     width: 400px;
     border-bottom: 1px solid #000;
+    border-radius: 0px;
     display: flex;
     
 }
@@ -181,4 +186,15 @@ table,th,td,tr{
 }
 .categ-bar-2{
     background-color: #ff8888;
+}
+
+.summary-container{
+    background-color: var(--bg-primary);
+    border-radius: 15px;
+    padding: 10px;
+}
+
+hr{
+    margin-top: 30px;
+    margin-bottom: 30px
 }

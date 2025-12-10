@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <html lang="fi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Tapahtumat</title>
 </head>
+
 <body>
     <header>
         <a href="home.html" class="btn">Etusivu</a>
         <div style="display: flex;">
             <a href="logout.html" class="btn">Kirjaudu ulos</a>
-        </div>  
+        </div>
     </header>
-    
+
     <div class="content">
         <div class="container">
             <h2>Tapahtumat</h2>
@@ -72,67 +74,83 @@
 
             <hr>
 
-            <h4>Kuukausiyhteenveto</h4>
-            <p id="netBudget"></p>
-            <table id="categ-graph" class="categ-graph">
+            <div class="horizontal-container">
+                <div class="summary-container">
+                    <h4>Kuukausiyhteenveto</h4>
+                    <p id="netBudgetMonthly"></p>
+                    <table id="categ-graph-monthly" class="categ-graph">
+                    </table>
+                </div>
 
-            </table>
+                <div class="summary-container">
+                    <h4>Vuoden yhteenveto</h4>
+                    <p id="netBudgetYear"></p>
+                    <table id="categ-graph-year" class="categ-graph">
+                    </table>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
 
-        if(localStorage.getItem("user") == null){
+        if (localStorage.getItem("user") == null) {
             window.location.replace("login.html");
         }
 
         const categorySelect = document.getElementById("filter-category");
-        
+
         let categories;
 
         fetch("api/category/get_all")
-        .then((response) => response.json())
-        .then((json) =>{
+            .then((response) => response.json())
+            .then((json) => {
 
-            if(json.status == "success"){
+                if (json.status == "success") {
 
-                categories = json.data;
-                for (let i = 0; i < json.data.length; i++) {
-                    
-                    let opt = document.createElement("option");
-                    
-                    const categ = json.data[i];
-                    opt.value = categ.id;
-                    opt.innerHTML = categ.title;
-                    
-                    categorySelect.appendChild(opt);
+                    categories = json.data;
+                    for (let i = 0; i < json.data.length; i++) {
+
+                        let opt = document.createElement("option");
+
+                        const categ = json.data[i];
+                        opt.value = categ.id;
+                        opt.innerHTML = categ.title;
+
+                        categorySelect.appendChild(opt);
+                    }
+
                 }
-                
-            }
-        });
+            });
 
 
         let accounts;
-        fetch("api/account/get_all?user_id="+localStorage.user)
-        .then((response) => response.json())
-        .then((json) =>{
-            if(json.status == "success"){
-                accounts = json.data;
-                search();
-            }
-        });
-        
+        fetch("api/account/get_all?user_id=" + localStorage.user)
+            .then((response) => response.json())
+            .then((json) => {
+                if (json.status == "success") {
+                    accounts = json.data;
+                    search();
+                }
+            });
+
 
 
         const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
 
         let month_sums = [];
         let month_categs = [];
         let month_types = [];
 
-        
+        let year_sums = [];
+        let year_categs = [];
+        let year_types = [];
+
+
         document.getElementById("filter-search").addEventListener("click", search);
-        function search(){
+        function search() {
 
             const resultTable = document.getElementById("results-table");
             resultTable.innerHTML = "<th>Päivämäärä</th><th>Rahamäärä</th><th>Tili</th><th>Kategoria</th><th>Kuvaus</th><th>Toiminnot</th>";
@@ -145,240 +163,356 @@
             const filter_category = document.getElementById("filter-category");
             const filter_type = document.getElementById("filter-type");
 
-            if(filter_dateStart.checkValidity() && filter_dateEnd.checkValidity() && filter_sum.checkValidity()){
-                
-                if((filter_operation.value === "none" && filter_sum.value !== "") || (filter_operation.value !== "none" && filter_sum.value === "")){
-                    
+            if (filter_dateStart.checkValidity() && filter_dateEnd.checkValidity() && filter_sum.checkValidity()) {
+
+                if ((filter_operation.value === "none" && filter_sum.value !== "") || (filter_operation.value !== "none" && filter_sum.value === "")) {
+
                     filter_operation.value = "none";
                     filter_sum.value = "";
-                } 
+                }
 
+                fetch("api/operation/get_all", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        user_id: localStorage.getItem("user"),
+                        filter: {
+                            start_date: filter_dateStart.value,
+                            end_date: filter_dateEnd.value,
+                            sum: {
+                                operation: filter_operation.value,
+                                value: filter_sum.value
+                            },
+                            category_id: filter_category.value
+                        }
+                    }
+                    ),
+
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8"
+                    }
+                })
+                    .then((response) => response.json())
+                    .then((json) => {
+                        if (json.status == "success") {
+
+                            const resultTable = document.getElementById("results-table");
+
+                            for (let i = 0; i < json.data.length; i++) {
+                                const opr = json.data[i];
+
+                                if ((filter_type.value === "coming" && opr.type === "going") || (filter_type.value === "going" && opr.type === "coming")) {
+                                    continue;
+                                }
+
+                                const tr = document.createElement("tr");
+
+                                const td1 = document.createElement("td");
+                                td1.textContent = opr.created_at.substring(0, 10);
+                                tr.appendChild(td1);
+
+                                const td2 = document.createElement("td");
+                                td2.textContent = opr.sum;
+                                if (opr.type === "going") { td2.className = "opr-going"; }
+                                else if (opr.type === "coming") { td2.className = "opr-coming"; }
+                                tr.appendChild(td2);
+
+                                const td4 = document.createElement("td");
+                                td4.textContent = accounts[accounts.findIndex(o => o.id === opr.account_id)].title;
+                                tr.appendChild(td4);
+
+                                const td3 = document.createElement("td");
+                                td3.textContent = categories[categories.findIndex(o => o.id === opr.category_id)].title;
+                                tr.appendChild(td3);
+
+                                const td5 = document.createElement("td");
+                                td5.textContent = opr.description;
+                                tr.appendChild(td5);
+
+                                const td6 = document.createElement("td");
+                                td6.innerHTML = '<div class="horizontal-container"><a href="operation_update.html?operation_id=' + opr.id + '" class="btn">Muokkaa</a> <button class="btn" onclick="deleteOperation(\'' + opr.id + '\')">Poista</button> </div>';
+                                tr.appendChild(td6);
+
+                                resultTable.appendChild(tr);
+
+                            }
+                            listSummaries();
+                        }
+                    });
+            }
+        }
+
+        function deleteOperation(id) {
+            if (confirm("Haluatko varmasti poistaa tapahtuman?")) {
+                if (id !== null) {
+                    fetch("api/operation/delete", {
+                        method: "DELETE",
+                        body: JSON.stringify({
+                            operation_id: id,
+                            user_id: localStorage.getItem("user")
+                        }),
+
+                        headers: {
+                            "Content-type": "application/json; charset=UTF-8"
+                        }
+                    }).then((response) => response.json())
+                        .then((json) => {
+                            if (json.status === 'error') {
+                                console.log(json.message);
+                            }
+                            search();
+                        });
+                }
+            }
+        }
+
+
+
+        function addMonthlyOperation(sum, type, categ, date) {
+            if (date.substr(5, 2) == currentMonth + 1 && date.substr(0,4) == currentYear) {
+                month_sums.push(parseFloat(sum));
+                month_categs.push(categ);
+                month_types.push(type);
+            }
+        }
+
+        function addYearlyOperation(sum, type, categ, date) {
+            if (date.substr(0, 4) == currentYear) {
+                year_sums.push(parseFloat(sum));
+                year_categs.push(categ);
+                year_types.push(type);
+            }
+        }
+
+        function listSummaries() {
             fetch("api/operation/get_all", {
                 method: "POST",
                 body: JSON.stringify({
-                    user_id: localStorage.getItem("user"),
-                    filter: {
-                    start_date: filter_dateStart.value,
-                    end_date: filter_dateEnd.value,
-                    sum:{
-                        operation: filter_operation.value,
-                        value: filter_sum.value
-                    },
-                category_id: filter_category.value
-                }}
-            ),
-                
+                    user_id: localStorage.getItem("user")
+                }),
+
                 headers: {
                     "Content-type": "application/json; charset=UTF-8"
                 }
             })
-            .then((response) => response.json())
-            .then((json) =>{
-                if(json.status == "success"){
-                    
-                    const resultTable = document.getElementById("results-table");
-                    
-                    for (let i = 0; i < json.data.length; i++) {
-                        const opr = json.data[i];
-                        
-                        if((filter_type.value === "coming" && opr.type === "going") || (filter_type.value === "going" && opr.type === "coming")){
-                            continue;
+                .then((response) => response.json())
+                .then((json) => {
+                    if (json.status == "success") {
+                        listMonthlySummary(json);
+                        listYearSummary(json);
+                    }
+                }
+                );
+        }
+
+        function listMonthlySummary(json) {
+            month_sums.length = 0;
+            month_categs.length = 0;
+            month_types.length = 0;
+            let netBudget = 0;
+
+            for (let i = 0; i < json.data.length; i++) {
+                const opr = json.data[i];
+
+                addMonthlyOperation(opr.sum, opr.type, categories[categories.findIndex(o => o.id === opr.category_id)].title, opr.created_at)
+
+            }
+
+            const summaryText = document.getElementById("netBudgetMonthly");
+            const summaryNum = document.createElement("span");
+
+            for (let i = 0; i < month_sums.length; i++) {
+
+                if (month_types[i] === "going") {
+                    netBudget -= month_sums[i];
+                }
+                else if (month_types[i] === "coming") {
+                    netBudget += month_sums[i];
+                }
+            }
+
+            summaryText.textContent = "Kuukauden nettobudjetti: ";
+            styleSummary(summaryNum, netBudget);
+            summaryText.appendChild(summaryNum);
+
+
+            const categList = document.getElementById("categ-graph-monthly");
+            categList.innerHTML = "";
+
+            let sums = [];
+            let bars = [];
+
+            categories.forEach(category => {
+                const tr = document.createElement("tr");
+                let categSum = 0;
+                const td1 = document.createElement("td");
+                const td2 = document.createElement("td");
+                const sumBar1 = document.createElement("div");
+                const sumBar2 = document.createElement("div");
+
+                tr.style = "height: 60px;"
+                td1.style = "border-right: 1px solid #000; max-width: 130px";
+                td2.className = "categ-bar-container table-no-border";
+                td1.className = "table-no-border";
+                tr.className = "table-no-border";
+
+                sumBar2.className = "categ-bar-filler";
+
+                for (let i = 0; i < month_sums.length; i++) {
+                    if (month_categs[i] === category.title) {
+
+                        if (month_types[i] === "going") {
+                            categSum -= month_sums[i];
+                        }
+                        else if (month_types[i] === "coming") {
+                            categSum += month_sums[i];
                         }
 
-                        const tr = document.createElement("tr");
-                        
-                        const td1 = document.createElement("td");
-                        td1.textContent = opr.created_at.substring(0,10);
-                        tr.appendChild(td1);
-                        
-                        const td2 = document.createElement("td");
-                        td2.textContent = opr.sum;
-                        if(opr.type ==="going"){td2.className = "opr-going";}
-                        else if(opr.type === "coming"){td2.className="opr-coming";}
-                        tr.appendChild(td2);
-
-                        const td4 = document.createElement("td");
-                        td4.textContent = accounts[accounts.findIndex(o=> o.id === opr.account_id)].title;
-                        tr.appendChild(td4);
-
-                        const td3 = document.createElement("td");
-                        td3.textContent = categories[categories.findIndex(o=> o.id === opr.category_id)].title;
-                        tr.appendChild(td3);
-
-                        const td5 = document.createElement("td");
-                        td5.textContent = opr.description;
-                        tr.appendChild(td5);
-
-                        const td6 = document.createElement("td");
-                        td6.innerHTML = '<div class="horizontal-container"><a href="operation_update.html?operation_id=' + opr.id +'" class="btn">Muokkaa</a> <button class="btn" onclick="deleteOperation(\''+ opr.id +'\')">Poista</button> </div>';
-                        tr.appendChild(td6);
-
-                        resultTable.appendChild(tr);
-                        
                     }
-                    listMonthlySummary();   
+                    td1.textContent = category.title;
+                    sumBar1.textContent = categSum.toFixed(2) + "€";
+                    if (categSum >= 0) {
+                        sumBar1.className = "categ-bar-1";
+                        td2.style = "flex-direction:row;";
+                    } else {
+                        sumBar1.className = "categ-bar-2";
+                        td2.style = "flex-direction:row-reverse;";
+                    }
+                    td2.appendChild(sumBar2);
+                    td2.appendChild(sumBar1);
+                    tr.appendChild(td1);
+                    tr.appendChild(td2);
+                    categList.appendChild(tr);
+                    sums.push(categSum);
+                    bars.push(sumBar1);
                 }
             });
-        }
-    }
 
-    function deleteOperation(id){
-        if(confirm("Haluatko varmasti poistaa tapahtuman?")){
-            if(id!== null){
-                fetch("api/operation/delete", {
-                    method: "DELETE",
-                    body: JSON.stringify({
-                    operation_id: id,
-                    user_id: localStorage.getItem("user")
-                }),
-                
-                headers: {
-                    "Content-type": "application/json; charset=UTF-8"
+            let highest = 0;
+
+            for (let i = 0; i < sums.length; i++) {
+                const num = Math.abs(sums[i]);
+                if (Math.abs(num > highest)) {
+                    highest = num;
                 }
-                }).then((response) => response.json())
-                .then((json) =>{
-                    if(json.status === 'error'){
-                        console.log(json.message);
-                    }
-                    search();
-                });
             }
+
+            const ratio = 200 / highest;
+
+            for (let i = 0; i < sums.length; i++) {
+                bars[i].style = "width: " + (Math.abs(sums[i]) * ratio) + "px;";
+            }
+
         }
-    }
 
 
+        function listYearSummary(json) {
+            year_sums.length = 0;
+            year_categs.length = 0;
+            year_types.length = 0;
+            let netBudget = 0;
 
-    function addMonthlyOperation(sum, type, categ, date){
-        if(date.substr(5,2) == currentMonth + 1){
-            month_sums.push(parseFloat(sum));
-            month_categs.push(categ);
-            month_types.push(type);
+            for (let i = 0; i < json.data.length; i++) {
+                const opr = json.data[i];
+
+                addYearlyOperation(opr.sum, opr.type, categories[categories.findIndex(o => o.id === opr.category_id)].title, opr.created_at)
+
+            }
+
+            const summaryText = document.getElementById("netBudgetYear");
+            const summaryNum = document.createElement("span");
+
+            for (let i = 0; i < year_sums.length; i++) {
+
+                if (year_types[i] === "going") {
+                    netBudget -= year_sums[i];
+                }
+                else if (year_types[i] === "coming") {
+                    netBudget += year_sums[i];
+                }
+            }
+
+            summaryText.textContent = "Kuukauden nettobudjetti: ";
+            styleSummary(summaryNum, netBudget);
+            summaryText.appendChild(summaryNum);
+
+
+            const categList = document.getElementById("categ-graph-year");
+            categList.innerHTML = "";
+
+            let sums = [];
+            let bars = [];
+
+            categories.forEach(category => {
+                const tr = document.createElement("tr");
+                let categSum = 0;
+                const td1 = document.createElement("td");
+                const td2 = document.createElement("td");
+                const sumBar1 = document.createElement("div");
+                const sumBar2 = document.createElement("div");
+
+                tr.style = "height: 60px;"
+                td1.style = "border-right: 1px solid #000; max-width: 130px";
+                td2.className = "categ-bar-container table-no-border";
+                td1.className = "table-no-border";
+                tr.className = "table-no-border";
+
+                sumBar2.className = "categ-bar-filler";
+
+                for (let i = 0; i < year_sums.length; i++) {
+                    if (year_categs[i] === category.title) {
+
+                        if (year_types[i] === "going") {
+                            categSum -= year_sums[i];
+                        }
+                        else if (year_types[i] === "coming") {
+                            categSum += year_sums[i];
+                        }
+
+                    }
+                    td1.textContent = category.title;
+                    sumBar1.textContent = categSum.toFixed(2) + "€";
+                    if (categSum >= 0) {
+                        sumBar1.className = "categ-bar-1";
+                        td2.style = "flex-direction:row;";
+                    } else {
+                        sumBar1.className = "categ-bar-2";
+                        td2.style = "flex-direction:row-reverse;";
+                    }
+                    td2.appendChild(sumBar2);
+                    td2.appendChild(sumBar1);
+                    tr.appendChild(td1);
+                    tr.appendChild(td2);
+                    categList.appendChild(tr);
+                    sums.push(categSum);
+                    bars.push(sumBar1);
+                }
+            });
+
+            let highest = 0;
+
+            for (let i = 0; i < sums.length; i++) {
+                const num = Math.abs(sums[i]);
+                if (Math.abs(num > highest)) {
+                    highest = num;
+                }
+            }
+
+            const ratio = 200 / highest;
+
+            for (let i = 0; i < sums.length; i++) {
+                bars[i].style = "width: " + (Math.abs(sums[i]) * ratio) + "px;";
+            }
+
         }
-    }
-
-    function listMonthlySummary(){
-        month_sums.length = 0;
-        month_categs.length = 0;
-        month_types.length = 0;
-        let netBudget = 0;
 
 
-        fetch("api/operation/get_all", {
-                method: "POST",
-                body: JSON.stringify({
-                    user_id: localStorage.getItem("user")
-                }),
-                
-                headers: {
-                    "Content-type": "application/json; charset=UTF-8"
-                }
-            })
-            .then((response) => response.json())
-            .then((json) =>{
-                if(json.status == "success"){
-                    
-                    const resultTable = document.getElementById("results-table");
-                    
-                    for (let i = 0; i < json.data.length; i++) {
-                        const opr = json.data[i];
-                        
-                        addMonthlyOperation(opr.sum, opr.type, categories[categories.findIndex(o=> o.id === opr.category_id)].title, opr.created_at)
-                        
-                    }
 
-                    const summaryText = document.getElementById("netBudget");
-                    const summaryNum = document.createElement("span");
-            
-                    for (let i = 0; i < month_sums.length; i++) {
-            
-                        if(month_types[i] === "going"){
-                            netBudget -= month_sums[i];
-                        }
-                        else if(month_types[i] === "coming"){
-                            netBudget += month_sums[i];
-                        }
-                    }
-            
-                    summaryText.textContent = "Kuukauden nettobudjetti: ";
-                    styleSummary(summaryNum, netBudget);
-                    summaryText.appendChild(summaryNum);
+        function styleSummary(numElement, sum) {
+            numElement.textContent = sum.toFixed(2) + " €";
+            numElement.style = sum < 0 ? "color:var(--text-red);" : "color:var(--text-green);";
+        }
 
 
-                    const categList = document.getElementById("categ-graph");
-                    categList.innerHTML = "";
-
-                    let sums = [];
-                    let bars = [];
-
-                    categories.forEach(category => {
-                        const tr = document.createElement("tr");
-                        let categSum = 0;
-                        const td1 = document.createElement("td");
-                        const td2 = document.createElement("td");
-                        const sumBar1 = document.createElement("div");
-                        const sumBar2 = document.createElement("div");
-
-                        tr.style="height: 60px;"
-                        td1.style = "border-right: 1px solid #000; max-width: 130px";
-                        td2.className = "categ-bar-container";
-
-                        sumBar2.className = "categ-bar-filler";
-
-                        for (let i = 0; i < month_sums.length; i++) {
-                        if(month_categs[i] === category.title){
-
-                            if(month_types[i] === "going"){
-                                categSum -= month_sums[i];
-                            }
-                            else if(month_types[i] === "coming"){
-                                categSum += month_sums[i];
-                            }
-                            
-                        }
-                        td1.textContent = category.title;
-                        sumBar1.textContent = categSum.toFixed(2) + "€";
-                        if(categSum >= 0){
-                            sumBar1.className = "categ-bar-1";
-                            td2.style = "flex-direction:row;";
-                        }else{
-                            sumBar1.className = "categ-bar-2";
-                            td2.style = "flex-direction:row-reverse;";
-                        }
-                        td2.appendChild(sumBar2);
-                        td2.appendChild(sumBar1);
-                        tr.appendChild(td1);
-                        tr.appendChild(td2);
-                        categList.appendChild(tr);
-                        sums.push(categSum);
-                        bars.push(sumBar1);
-                    }
-                    });
-
-                    let highest = 0;
-
-                    for (let i = 0; i < sums.length; i++) {
-                        const num = Math.abs(sums[i]);
-                        if(Math.abs(num > highest)){
-                            highest = num;
-                        }
-                    }
-
-                    const ratio = 200 / highest;
-                    console.log(highest + ", " + ratio)
-                    for (let i = 0; i < sums.length; i++) {
-                        bars[i].style = "width: "+ (Math.abs(sums[i]) * ratio) +"px;";
-                    }
-                }
-        });
-
-    }
-
-    function styleSummary(numElement, sum){
-        numElement.textContent = sum.toFixed(2) + " €";
-        numElement.style = sum < 0? "color:var(--text-red);" : "color:var(--text-green);";
-    }
-
-    
 
     </script>
 
@@ -386,4 +520,5 @@
         <p>footer</p>
     </footer>
 </body>
+
 </html>
