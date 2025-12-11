@@ -18,7 +18,7 @@
 
     <div class="content">
         <div class="container">
-            <h2>Tapahtumat</h2>
+            <h1>Tapahtumat</h1>
             <div class="horizontal-container">
                 <a href="operation_create.html" class="btn">Lisää uusi tapahtuma</a>
                 <a href="accounts.html" class="btn">Selaa tilejä</a>
@@ -27,12 +27,14 @@
             <form class="horizontal-container">
                 <h4>Suodattimet:</h4>
                 <div>
-                    <label>Ajanjakso:</label><br>
+                    <label>Ajanjakso:</label><br><br>
+                    <label for="filter-date-start">Alkaa: </label>
                     <input type="date" name="filter-date-start" id="filter-date-start"><br>
+                    <label for="filter-date-end">Päättyy: </label>
                     <input type="date" name="filter-date-end" id="filter-date-end">
                 </div>
                 <div>
-                    <label>Rahamäärä:</label><br>
+                    <label for="filter-sum">Rahamäärä:</label><br><br>
                     <select name="filter-operation" id="filter-operation">
                         <option value="none">-</option>
                         <option value=">">&gt;</option>
@@ -44,7 +46,7 @@
                     <input type="number" step=".01" name="filter-sum" id="filter-sum">
                 </div>
                 <div>
-                    <label>Tyyppi:</label><br>
+                    <label for="filter-type">Tyyppi:</label><br><br>
                     <select name="filter-type" id="filter-type">
                         <option value="all">Kaikki</option>
                         <option value="coming">Tulot</option>
@@ -52,7 +54,7 @@
                     </select>
                 </div>
                 <div>
-                    <label>Kategoria:</label><br>
+                    <label for="filter-category">Kategoria:</label><br><br>
                     <select name="filter-category" id="filter-category">
                         <option value="">Kaikki kategoriat</option>
                     </select>

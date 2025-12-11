@@ -16,7 +16,7 @@
     
     <div class="content">
         <div class="container">
-            <h2>Uusi tili</h2>
+            <h1>Uusi tili</h1>
             <form method="post" action="#">
                 <label for="title">Nimi:</label>
                 <input type="text" name="title" id="title" required><br><br>
@@ -25,7 +25,10 @@
                 <input type="number" step=".01" name="sum" id="sum" required><br><br>
 
             </form>
-            <button type="submit" id="submitbtn" class="btn">Lisää tili</button>
+            <div class="horizontal-container">
+                <button type="submit" id="submitbtn" class="btn">Lisää tili</button>
+                <a href="accounts.html" class="btn">Kumoa</a>
+            </div>
 
             <p class="msg-empty" id="result-text"></p>
         </div>

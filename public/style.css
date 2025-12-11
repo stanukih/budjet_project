@@ -6,8 +6,8 @@
     --text-primary: #000;
     --text-secondary: #fff;
     --text-table: #000;
-    --text-red: #ff0000;
-    --text-green: #009900;
+    --text-red: #c70000;
+    --text-green: #006700;
 
     /* --bg-primary: #595b67;
     --bg-secondary: #797e8b;
@@ -135,8 +135,10 @@ table,th,td,tr{
     color: var(--text-table);
 }
 
+
+
 .opr-going{
-    color: red;
+    color:var(--text-red);
 }
 .opr-going::before{
     content: "-";
@@ -149,6 +151,11 @@ table,th,td,tr{
     content: "+";
 }
 
+.opr-coming,.opr-going{
+    /* font-weight: 600; */
+    /* background-color: #f2f2f2; */
+    border-radius: 0px;
+}
 .opr-coming::after,.opr-going::after{
     content: " €";
 }
